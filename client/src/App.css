@@ -1,0 +1,59 @@
+body {
+   background-color: #1c1c1c; /* Темный фон */
+   color: #ffffff; /* Белый текст */
+   font-family: Arial, sans-serif;
+   margin: 0;
+   padding: 0;
+   display: flex;
+   width: 100%;
+   flex-direction: column;
+   justify-content: center;
+   align-items: center;
+ }
+ 
+ .container {
+   display: flex;
+   justify-content: center; /* Центрируем контент по горизонтали */
+   align-items: center; /* Центрируем по вертикали */
+   min-height: 100vh; /* Занимаем всю высоту экрана */
+   text-align: center;
+   flex-direction: column;
+ }
+ 
+ h1 {
+   margin-bottom: 20px;
+ }
+ 
+ .data-section {
+   background-color: #333;
+   padding: 20px;
+   border-radius: 8px;
+   margin: 10px;
+   width: 300px; /* Фиксированная ширина блока */
+   max-height: 150px; /* Ограничение высоты секции */
+   overflow-y: auto; /* Добавляем вертикальную прокрутку */
+   flex: 1; /* Равное распределение пространства между блоками */
+ }
+ 
+ .data-section h2 {
+   margin-bottom: 10px;
+ }
+ 
+ pre {
+   background-color: #444;
+   padding: 10px;
+   border-radius: 4px;
+   overflow: auto;
+   max-height: 100px; /* Ограничиваем высоту блока данных */
+ }
+ 
+ .error {
+   color: red;
+ }
+ 
+ .time-info {
+   font-size: 0.9rem;
+   color: #aaa;
+   margin-top: 5px;
+ }
+ 

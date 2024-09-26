@@ -6,6 +6,10 @@ const { ApolloServer, gql } = require('apollo-server-express');
 const app = express();
 
 let cache = null;
+let performanceData = {
+    noCacheTime: null,
+    cacheTime: null,
+};
 
 function generateData() {
     let result = '';
@@ -20,6 +24,12 @@ const typeDefs = gql`
     type Query {
         noCache: String
         cache: String
+        performance: PerformanceData
+    }
+
+    type PerformanceData {
+        noCacheTime: Float
+        cacheTime: Float
     }
 `;
 
@@ -27,34 +37,34 @@ const resolvers = {
     Query: {
         noCache: () => {
             const start = performance.now();
-
             let result = generateData();
             fs.writeFileSync('data_nocache.txt', result);
-
             const end = performance.now();
-            const timeSpent = end - start;
-
-            return `Data generated and written to file without cache. Time spent: ${timeSpent} ms`;
+            performanceData.noCacheTime = end - start; // Сохраняем время выполнения
+            return `Data generated and written to file without cache.`;
         },
         cache: () => {
             const start = performance.now();
 
             if (cache) {
                 const end = performance.now();
-                const timeSpent = end - start;
-
-                return `Data retrieved from cache. Time spent: ${timeSpent} ms`;
+                performanceData.cacheTime = end - start; // Сохраняем время выполнения
+                return `Data retrieved from cache.`;
             }
 
             let result = generateData();
             fs.writeFileSync('data_cache.txt', result);
-
             cache = result;
 
             const end = performance.now();
-            const timeSpent = end - start;
-
-            return `Data generated, written to file, and cached. Time spent: ${timeSpent} ms`;
+            performanceData.cacheTime = end - start; // Сохраняем время выполнения
+            return `Data generated, written to file, and cached.`;
+        },
+        performance: () => {
+            return {
+                noCacheTime: performanceData.noCacheTime,
+                cacheTime: performanceData.cacheTime,
+            };
         }
     }
 };
