@@ -7,7 +7,6 @@ const app = express();
 
 let cache = null;
 
-// Генерация данных
 function generateData() {
     let result = '';
     for (let i = 0; i < 10000; i++) {
@@ -17,7 +16,6 @@ function generateData() {
     return result;
 }
 
-// Определяем схему GraphQL
 const typeDefs = gql`
     type Query {
         noCache: String
@@ -25,7 +23,6 @@ const typeDefs = gql`
     }
 `;
 
-// Определяем резолверы для GraphQL
 const resolvers = {
     Query: {
         noCache: () => {
@@ -62,7 +59,6 @@ const resolvers = {
     }
 };
 
-// Создаем сервер Apollo с определенной схемой и резолверами
 const server = new ApolloServer({ typeDefs, resolvers });
 
 async function startServer() {
