@@ -14,11 +14,18 @@ function App() {
     setLoadingNoCache(true);
     try {
       const response = await axios.post('http://localhost:3000/graphql', {
-        query: `
-          query {
-            noCache
-          }
-        `,
+        data: {
+          query: `
+            query {
+              noCache {
+                id
+                name
+                age
+                gender
+              }
+            }
+          `,
+        },
       });
       setDataNoCache(response.data.data.noCache);
     } catch (err) {
@@ -32,11 +39,18 @@ function App() {
     setLoadingCache(true);
     try {
       const response = await axios.post('http://localhost:3000/graphql', {
-        query: `
-          query {
-            cache
-          }
-        `,
+        data: {
+          query: `
+            query {
+              cache {
+                id
+                name
+                age
+                gender
+              }
+            }
+          `,
+        },
       });
       setDataCache(response.data.data.cache);
     } catch (err) {
@@ -49,14 +63,16 @@ function App() {
   const fetchPerformanceData = async () => {
     try {
       const response = await axios.post('http://localhost:3000/graphql', {
-        query: `
-          query {
-            performance {
-              noCacheTime
-              cacheTime
+        data: {
+          query: `
+            query {
+              performance {
+                noCacheTime
+                cacheTime
+              }
             }
-          }
-        `,
+          `,
+        },
       });
       setPerformanceData(response.data.data.performance);
     } catch (err) {
@@ -66,9 +82,9 @@ function App() {
 
   const calculateFrontEndCacheTime = () => {
     const start = performance.now();
-    // Предполагаем, что кэширование происходит здесь (например, сохраняем данные в состоянии)
+    // Имитируем кэширование на фронтенде
     const end = performance.now();
-    return end - start; // Возвращаем время кэширования
+    return end - start; // Возвращаем время для кэширования на фронтенде
   };
 
   useEffect(() => {
@@ -86,7 +102,7 @@ function App() {
       <div style={{ display: 'flex', justifyContent: 'space-around', flexWrap: 'wrap', width: '100%' }}>
         <section className="data-section">
           <h2>Data without Cache (Backend)</h2>
-          {loadingNoCache ? <p>Loading...</p> : <pre>{dataNoCache}</pre>}
+          {loadingNoCache ? <p>Loading...</p> : <pre>{JSON.stringify(dataNoCache, null, 2)}</pre>}
           {performanceData.noCacheTime && (
             <p className="time-info">Time taken (backend no cache): {performanceData.noCacheTime.toFixed(2)} ms</p>
           )}
@@ -94,13 +110,13 @@ function App() {
 
         <section className="data-section">
           <h2>Data with Cache (Frontend)</h2>
-          <pre>{dataNoCache}</pre>
+          <pre>{JSON.stringify(dataCache, null, 2)}</pre>
           <p className="time-info">Time taken (cached on frontend): {frontEndCacheTime.toFixed(2)} ms</p>
         </section>
 
         <section className="data-section">
           <h2>Data with Cache (Backend)</h2>
-          {loadingCache ? <p>Loading...</p> : <pre>{dataCache}</pre>}
+          {loadingCache ? <p>Loading...</p> : <pre>{JSON.stringify(dataCache, null, 2)}</pre>}
           {performanceData.cacheTime && (
             <p className="time-info">Time taken (backend cache): {performanceData.cacheTime.toFixed(2)} ms</p>
           )}
