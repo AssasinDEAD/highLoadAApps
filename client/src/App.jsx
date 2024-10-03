@@ -13,19 +13,17 @@ function App() {
   const fetchDataNoCache = async () => {
     setLoadingNoCache(true);
     try {
-      const response = await axios.post('http://localhost:3000/graphql', {
-        data: {
-          query: `
-            query {
-              noCache {
-                id
-                name
-                age
-                gender
-              }
+      const response = await axios.post('http://localhost:4000/graphql', {
+        query: `
+          query {
+            noCache {
+              id
+              name
+              age
+              gender
             }
-          `,
-        },
+          }
+        `,
       });
       setDataNoCache(response.data.data.noCache);
     } catch (err) {
@@ -38,19 +36,17 @@ function App() {
   const fetchDataCache = async () => {
     setLoadingCache(true);
     try {
-      const response = await axios.post('http://localhost:3000/graphql', {
-        data: {
-          query: `
-            query {
-              cache {
-                id
-                name
-                age
-                gender
-              }
+      const response = await axios.post('http://localhost:4000/graphql', {
+        query: `
+          query {
+            cache {
+              id
+              name
+              age
+              gender
             }
-          `,
-        },
+          }
+        `,
       });
       setDataCache(response.data.data.cache);
     } catch (err) {
@@ -62,17 +58,15 @@ function App() {
 
   const fetchPerformanceData = async () => {
     try {
-      const response = await axios.post('http://localhost:3000/graphql', {
-        data: {
-          query: `
-            query {
-              performance {
-                noCacheTime
-                cacheTime
-              }
+      const response = await axios.post('http://localhost:4000/graphql', {
+        query: `
+          query {
+            performance {
+              noCacheTime
+              cacheTime
             }
-          `,
-        },
+          }
+        `,
       });
       setPerformanceData(response.data.data.performance);
     } catch (err) {
@@ -82,7 +76,6 @@ function App() {
 
   const calculateFrontEndCacheTime = () => {
     const start = performance.now();
-    // Имитируем кэширование на фронтенде
     const end = performance.now();
     return end - start; // Возвращаем время для кэширования на фронтенде
   };

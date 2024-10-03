@@ -1,19 +1,25 @@
-const express = require('express');
-const { graphqlHTTP } = require('express-graphql');
-const { buildSchema } = require('graphql');
+const { ApolloServer, gql } = require('apollo-server');
 const { Pool } = require('pg');
-const cors = require('cors');
-const { performance } = require('perf_hooks');  // Для использования performance.now()
+const { performance } = require('perf_hooks');
 
+// Подключение к базе данных PostgreSQL
 const pool = new Pool({
-  user: 'postgres',       
+  user: 'postgres',
   host: 'localhost',
-  database: 'highLoadTest',  
-  password: 'Serik2004', 
+  database: 'highLoadTest',
+  password: 'Serik2004',
   port: 5432,
 });
 
-const schema = buildSchema(`
+// Переменные для хранения данных кэша и времени выполнения
+let cache = null;
+let performanceData = {
+  noCacheTime: 0,
+  cacheTime: 0,
+};
+
+// Определение схемы GraphQL
+const typeDefs = gql`
   type User {
     id: ID!
     name: String
@@ -27,65 +33,60 @@ const schema = buildSchema(`
   }
 
   type Query {
-    users: [User]
     noCache: [User]
     cache: [User]
     performance: PerformanceData
   }
-`);
+`;
 
-let cacheData = null;
-
-const root = {
-  users: async () => {
-    const result = await pool.query('SELECT * FROM users');
-    return result.rows;
-  },
-  noCache: async () => {
-    const start = performance.now();
-    const result = await pool.query('SELECT * FROM users');
-    const end = performance.now();
-    console.log(`No cache query time: ${(end - start).toFixed(2)} ms`);
-    return result.rows;
-  },
-  cache: async () => {
-    const start = performance.now();
-    if (!cacheData) {
+// Резолверы для запросов
+const resolvers = {
+  Query: {
+    // Запрос без кэша, возвращает пользователей из базы данных
+    noCache: async () => {
+      const start = performance.now();  // Начинаем измерять время
       const result = await pool.query('SELECT * FROM users');
-      cacheData = result.rows;
-    }
-    const end = performance.now();
-    console.log(`Cache query time: ${(end - start).toFixed(2)} ms`);
-    return cacheData;
+      const end = performance.now();    // Завершаем измерение
+      performanceData.noCacheTime = end - start;  // Сохраняем время выполнения
+
+      console.log(`No cache query time: ${(end - start).toFixed(2)} ms`);
+      return result.rows;  // Возвращаем данные пользователей
+    },
+
+    // Запрос с кэшем
+    cache: async () => {
+      const start = performance.now();
+
+      if (cache) {  // Если данные в кэше, возвращаем их
+        const end = performance.now();
+        performanceData.cacheTime = end - start;  // Сохраняем время выполнения для кэша
+        console.log(`Cache query time: ${(end - start).toFixed(2)} ms`);
+        return cache;  // Возвращаем данные из кэша
+      }
+
+      // Если данных в кэше нет, выполняем запрос к базе данных
+      const result = await pool.query('SELECT * FROM users');
+      cache = result.rows;  // Сохраняем данные в кэше
+      const end = performance.now();
+      performanceData.cacheTime = end - start;  // Сохраняем время выполнения
+
+      console.log(`Cache miss, query time: ${(end - start).toFixed(2)} ms`);
+      return cache;  // Возвращаем данные
+    },
+
+    // Возвращает данные о времени выполнения запросов
+    performance: () => {
+      return {
+        noCacheTime: performanceData.noCacheTime,
+        cacheTime: performanceData.cacheTime,
+      };
+    },
   },
-  performance: async () => {
-    // Измерение времени запроса без кэша
-    const startNoCache = performance.now();
-    await pool.query('SELECT * FROM users');
-    const noCacheTime = performance.now() - startNoCache;
-
-    // Измерение времени запроса с кэшем
-    const startCache = performance.now();
-    if (!cacheData) {
-      await pool.query('SELECT * FROM users');
-    }
-    const cacheTime = performance.now() - startCache;
-
-    return { noCacheTime, cacheTime };
-  }
 };
 
-const app = express();
-app.use(cors({
-  origin: "*"
-}));  
+// Создание и запуск сервера Apollo
+const server = new ApolloServer({ typeDefs, resolvers });
 
-app.use('/graphql', graphqlHTTP({
-  schema: schema,
-  rootValue: root,
-  graphiql: true,  
-}));
-
-app.listen(3000, () => {
-  console.log('Server is running on port 3000');
+server.listen().then(({ url }) => {
+  console.log(`Server ready at ${url}`);
 });
